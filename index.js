@@ -1,11 +1,32 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
-const port = 3000;
+app.use(cors());
+const cookieParser = require('cookie-parser');
 
+// parse requests of content-type - application/json
+app.use(express.json());
+
+app.use(cookieParser())
+
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
+
+// model;
+const db = require("./app/models");
+// routes
+require("./app/routes/auth.routes")(app);
+require('./app/routes/user.routes')(app);
+
+db.sequelize.sync();
+
+// simple route
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.json({ message: "Welcome to bezkoder application." });
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
+// set port, listen for requests
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}.`);
 });
