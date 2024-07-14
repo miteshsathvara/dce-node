@@ -36,21 +36,27 @@ exports.register = async (req, res) => {
 
 }
 exports.login = async (req, res) => {
-    // console.log(req.body)
+     console.log(req.body)
     // Save User to database
     try {
         const user = await User.findOne({
             where: {
-                mobile_number: req.body.mobile_number
+                mobile_number: req.body.username
             }
         });
 
         if (!user) {
-            return res.status(404).send({ message: "User Not Found." })
+            return res.status(404).send({ 
+                status : 'Failed',
+                message: "User Not Found."
+             })
         }
         const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
         if (!passwordIsValid) {
-            return res.status(401).send({ message: "Password Invalid" });
+            return res.status(401).send({ 
+                status : 'Failed',
+                message: "Username or Password Invalid." 
+            });
         }
 
         const token = jwt.sign(
@@ -66,13 +72,18 @@ exports.login = async (req, res) => {
         const jsontoken = jwt.sign({ id: user.id }, config.secret, { expiresIn: '300m' });
         res.cookie('token', jsontoken, { httpOnly: true, secure: true, SameSite: 'strict', expires: new Date(Number(new Date()) + 30 * 60 * 1000) }); //we add secure: true, when using https.
         return res.status(200).send({
+            status : 'Success',
+            message : 'Logged in Successfully.',
             id: user.id,
             mobile_number: user.mobile_number,
             token: jsontoken
         })
 
     } catch (error) {
-        res.status(500).send({ message: error.message });
+        res.status(500).send({ 
+            status : 'Failed',
+            message: error.message
+         });
     }
 
 }

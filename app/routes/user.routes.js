@@ -8,4 +8,9 @@ module.exports = function (app) {
             [authJwt.verifyToken]
         ],
         controller.getUserExamDetail);
+
+    app.get('/get_questions/:id',
+        controller.getQuestions);
+
+    
 };
