@@ -1,28 +1,18 @@
-const config = require('../config/db.config.js');
+const Activity = require('../models/Activity.js');
+const ActivityPostTest = require('../models/ActivityPostTest.js');
+const ActivityPostTestResult = require('../models/ActivityPostTestResult.js');
+const User = require('../models/User.js');
 
-const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize(
-    config.DB,
-    config.USER,
-    config.PASSWORD,
-    {
-        host: config.HOST,
-        dialect: config.dialect,
-        pool: {
-            max: config.pool.max,
-            min: config.pool.min,
-            acquire: config.pool.acquire,
-            idle: config.pool.idle
-        }
-    }
-);
+Activity.hasMany(ActivityPostTest, { foreignKey: 'activity_id' });
+ActivityPostTest.belongsTo(Activity, { foreignKey: 'activity_id' });
 
-const db = {};
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+ActivityPostTest.hasMany(ActivityPostTestResult, { foreignKey: 'question_id' });
+ActivityPostTestResult.belongsTo(ActivityPostTest, { foreignKey: 'question_id' });
 
-db.user = require("../models/users.model")(sequelize, Sequelize);
-db.questions = require("../models/questions.model")(sequelize, Sequelize);
-
-module.exports = db;
+module.exports = {
+    Activity,
+    ActivityPostTest,
+    ActivityPostTestResult,
+    User
+};

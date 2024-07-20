@@ -13,12 +13,11 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
 
 // model;
-const db = require("./app/models");
+require("./app/config/db.config");
 // routes
 require("./app/routes/auth.routes")(app);
 require('./app/routes/user.routes')(app);
 
-db.sequelize.sync();
 
 // simple route
 app.get("/", (req, res) => {

@@ -1,8 +1,6 @@
 // SignUp 
-const db = require("../models");
 const config = require("../config/auth.config");
-const User = db.user;
-
+const { User } = require('../models');
 const session = require('express-session')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

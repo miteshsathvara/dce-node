@@ -1,4 +1,5 @@
 const controller = require("../controllers/user.controller");
+const examController = require("../controllers/exam.controller");
 const authJwt = require('../middleware/authJwt');
 
 module.exports = function (app) {
@@ -10,7 +11,15 @@ module.exports = function (app) {
         controller.getUserExamDetail);
 
     app.get('/get_questions/:id',
-        controller.getQuestions);
+        [
+            [authJwt.verifyToken]
+        ],
+        examController.getQuestions);
+    app.post('/attemptquiz/:id',
+        [
+            [authJwt.verifyToken]
+        ],
+        examController.attemptquiz);
 
-    
+
 };
