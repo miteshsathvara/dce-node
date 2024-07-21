@@ -3,7 +3,7 @@ const { Activity, ActivityPostTest, ActivityPostTestResult } = require('../model
 exports.getQuestions = async (req, res) => {
     console.log(req.params.id);
     var option = {
-        limit: 10,
+        limit: 50,
         offset: 0,
         where: { activity_id: req.params.id }
     };
@@ -23,13 +23,13 @@ exports.getQuestions = async (req, res) => {
                     question_id: results.rows[i].dataValues.id
                 }
             });
-            if(!attemptedanswerExist){
-                
-                results.rows[i].dataValues.attempted = false; 
+
+            if (!attemptedanswerExist?.dataValues?.raw_data) {
+                results.rows[i].dataValues.attempted = false;
                 results.rows[i].dataValues.attempted_answer = "";
-            }else{
-                results.rows[i].dataValues.attempted = true; 
-                results.rows[i].dataValues.attempted_answer = attemptedanswerExist?.dataValues?.raw_data; 
+            } else {
+                results.rows[i].dataValues.attempted = true;
+                results.rows[i].dataValues.attempted_answer = attemptedanswerExist?.dataValues?.raw_data;
             }
         }
         res.status(200).send({
@@ -73,7 +73,7 @@ exports.attemptquiz = async (req, res) => {
             });
         }
     });
-    
+
     for (let answer of result_for_question) {
 
         attemptedanswerExist = await ActivityPostTestResult.findOne({
@@ -117,5 +117,5 @@ exports.attemptquiz = async (req, res) => {
             );
         }
     }
-    return res.status(200).send({ status: "Success",data: "Answer Save Successfully." });
+    return res.status(200).send({ status: "Success", data: "Answer Save Successfully." });
 }
