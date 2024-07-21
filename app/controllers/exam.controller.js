@@ -1,14 +1,14 @@
 const { Activity, ActivityPostTest, ActivityPostTestResult } = require('../models');
 
 exports.getQuestions = async (req, res) => {
-    console.log(req.params.id);
+    
     var option = {
         limit: 50,
         offset: 0,
         where: { activity_id: req.params.id }
     };
     ActivityPostTest.findAndCountAll(option).then(async function (results) {
-        console.log(results.rows.length);
+       
         const q = [];
         for (let i = 0; i < results.rows.length; i++) {
             const obj = JSON.parse(results.rows[i].dataValues.answer);
@@ -39,7 +39,7 @@ exports.getQuestions = async (req, res) => {
     });
 }
 exports.attemptquiz = async (req, res) => {
-    console.log('user_id', req.userId);
+   
     const data = await Activity.findByPk(req.params.id);
 
     if (!data) {

@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res) => {
     // Save User to database
     try {
-        console.log(req.body)
+        
         const { first_name, last_name, password, mobile_number, banch_time, exam_type } = req.body;
         if (!first_name || !last_name || !password || !mobile_number || !banch_time || !exam_type) {
             res.status(400)
@@ -34,7 +34,7 @@ exports.register = async (req, res) => {
 
 }
 exports.login = async (req, res) => {
-     console.log(req.body)
+     
     // Save User to database
     try {
         const user = await User.findOne({
@@ -87,7 +87,7 @@ exports.login = async (req, res) => {
 }
 
 exports.logout = async (req, res) => {
-    // console.log(req.session);
+    
     try {
         res.clearCookie("token");
         return res.status(200).send({

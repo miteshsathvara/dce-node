@@ -5,7 +5,7 @@ const User = db.user;
 
 verifyToken = (req, res, next) => {
     const token = req.header('authorization');
-    console.log(token);
+    
     if (!token) {
         return res.status(403).send({
             message: "No token provided!",
@@ -20,7 +20,7 @@ verifyToken = (req, res, next) => {
                     message: "Unauthorized!",
                 });
             }
-            console.log("decode_id", decoded.id);
+            
             req.userId = decoded.id;
             next();
         });
