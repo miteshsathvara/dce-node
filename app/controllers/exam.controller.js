@@ -1,5 +1,13 @@
 const { Activity, ActivityPostTest, ActivityPostTestResult } = require('../models');
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 exports.getQuestions = async (req, res) => {
     
     var option = {
@@ -13,7 +21,10 @@ exports.getQuestions = async (req, res) => {
         for (let i = 0; i < results.rows.length; i++) {
             const obj = JSON.parse(results.rows[i].dataValues.answer);
             results.rows[i].dataValues.answer = obj;
+            results.rows[i].dataValues.index = i;
             q.push(results.rows[i].dataValues);
+            
+            
 
             // get attempted answer
             attemptedanswerExist = await ActivityPostTestResult.findOne({
@@ -32,9 +43,10 @@ exports.getQuestions = async (req, res) => {
                 results.rows[i].dataValues.attempted_answer = attemptedanswerExist?.dataValues?.raw_data;
             }
         }
+        const shuffledQuestions = shuffleArray(q);
         res.status(200).send({
             message: "Success",
-            data: q
+            data: shuffledQuestions
         });
     });
 }
