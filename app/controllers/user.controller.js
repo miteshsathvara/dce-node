@@ -1,16 +1,19 @@
 
 const { Activity, ActivityPostTest, ActivityPostTestResult, User } = require('../models');
 exports.getUserExamDetail = async (req, res) => {
-  User.findByPk(req.userId)
-    .then(data => {
-      res.status(200).send({
-        message: "Success",
-        data: data
-      });
-    })
-    .catch(err => {
-      res.status(500).send({
-        message: "Error retrieving User with id=" + req.userId
-      });
-    });
+  const option = {
+    limit: 1,
+    offset: 0,
+    where: { id: req.userId },
+    include: [{
+      model: Activity,
+      required: true, // Use `false` to perform a LEFT OUTER JOIN instead of INNER JOIN
+    }],
+  };
+  const users = await User.findOne(option);
+  res.status(200).send({
+    message: "Success",
+    data: users
+  });
+
 }

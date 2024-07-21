@@ -7,6 +7,8 @@ const User = require('../models/User.js');
 Activity.hasMany(ActivityPostTest, { foreignKey: 'activity_id' });
 ActivityPostTest.belongsTo(Activity, { foreignKey: 'activity_id' });
 
+User.belongsTo(Activity,{ foreignKey: 'exam_type' });
+
 ActivityPostTest.hasMany(ActivityPostTestResult, { foreignKey: 'question_id' });
 ActivityPostTestResult.belongsTo(ActivityPostTest, { foreignKey: 'question_id' });
 

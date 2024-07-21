@@ -7,6 +7,7 @@ const Activity = sequelize.define('activities', {
         primaryKey: true,
         autoIncrement: true,
     },
+    name: DataTypes.STRING,
     // Other fields
 },{
     timestamps: false,

@@ -25,10 +25,12 @@ const User = sequelize.define('users', {
   password: {
     type: DataTypes.STRING,
     allowNull: false,
-  }
+  },
+  exam_type: DataTypes.INTEGER,
 },
   {
-    timestamps: false
+    timestamps: false,
+    tableName: 'users'
   });
 
 module.exports = User;
