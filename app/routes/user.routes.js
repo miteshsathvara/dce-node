@@ -4,6 +4,8 @@ const authJwt = require('../middleware/authJwt');
 
 module.exports = function (app) {
 
+    
+
     app.get('/getUserExamDetail',
         [
             [authJwt.verifyToken]
@@ -20,6 +22,6 @@ module.exports = function (app) {
             [authJwt.verifyToken]
         ],
         examController.attemptquiz);
-
+    
 
 };

@@ -12,6 +12,7 @@ module.exports = function(app) {
 app.post('/register',controller.register);
 app.post("/login", controller.login);
 app.post("/logout", controller.logout);
+app.get("/activitytype", controller.activitytype);
 //   app.post(
 //     "/api/register",
 //     // [

@@ -4,13 +4,14 @@ const { User } = require('../models');
 const session = require('express-session')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Activity } = require('../models');
 
 
 exports.register = async (req, res) => {
     // Save User to database
     try {
         
-        const { first_name, last_name, password, mobile_number, banch_time, exam_type } = req.body;
+        const { first_name, last_name, password, mobile_number, banch_time, exam_type } = req.body.formData;
         if (!first_name || !last_name || !password || !mobile_number || !banch_time || !exam_type) {
             res.status(400)
                 .json({ error: "fields cannot be empty!" });
@@ -18,18 +19,26 @@ exports.register = async (req, res) => {
         }
         // User Create
         const user = await User.create({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            mobile_number: req.body.mobile_number,
-            banch_time: req.body.banch_time,
-            exam_type: req.body.exam_type,
-            password: bcrypt.hashSync(req.body.password, 8),
+            first_name: req.body.formData.first_name,
+            last_name: req.body.formData.last_name,
+            mobile_number: req.body.formData.mobile_number,
+            banch_time: req.body.formData.banch_time,
+            exam_type: req.body.formData.exam_type,
+            password: bcrypt.hashSync(req.body.formData.password, 8),
             create_at: null,
             update_at: null,
         });
-        if (user) res.send({ message: "User Created Successfully." });
+        if (user){
+            return res.status(200).send({
+                status : 'Success',
+                message : 'Registration Successfully.',
+            })
+        };
     } catch (error) {
-        res.status(500).send({ message: error.message });
+        res.status(500).send({ 
+            status : 'Failed',
+            message: error.message
+         });
     }
 
 }
@@ -92,6 +101,24 @@ exports.logout = async (req, res) => {
         res.clearCookie("token");
         return res.status(200).send({
             message: "You've been signed out!"
+        });
+    } catch (err) {
+        this.next(err);
+    }
+}
+exports.activitytype = async (req, res) => {
+    
+    try {
+        var option = {
+            limit: 50,
+            offset: 0,
+        };
+        Activity.findAndCountAll(option).then(async function (results) {
+            console.log(results.rows);
+            res.status(200).send({
+                message: "Success",
+                data: results.rows
+            });
         });
     } catch (err) {
         this.next(err);
