@@ -1,6 +1,7 @@
 // SignUp 
 const config = require("../config/auth.config");
 const { User } = require('../models');
+const { Roles } = require('../models');
 const session = require('express-session')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -19,7 +20,6 @@ exports.register = async (req, res) => {
             return;
         }
         // User Create
-        const currentDate = dayjs().format('YYYY-MM-DD');
         const user = await User.create({
             first_name: req.body.formData.first_name,
             last_name: req.body.formData.last_name,
@@ -27,12 +27,19 @@ exports.register = async (req, res) => {
             mobile_number: req.body.formData.mobile_number,
             banch_time: req.body.formData.banch_time,
             exam_type: req.body.formData.exam_type,
-            exam_date: currentDate,
+            exam_date: dayjs().format('YYYY-MM-DD'),
             password: bcrypt.hashSync(req.body.formData.password, 8),
             created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
             updated_at: dayjs().format('YYYY-MM-DD HH:mm:ss')
         });
         if (user) {
+            const userId = user.id;
+
+            await Roles.create({
+                role_id: '2',
+                model_type: "App\\Models\\User", // Escape backslashes with another backslash
+                model_id: userId
+            });
             return res.status(200).send({
                 status: 'Success',
                 message: 'Registration Successfully.',
