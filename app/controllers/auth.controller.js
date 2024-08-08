@@ -11,8 +11,8 @@ exports.register = async (req, res) => {
     // Save User to database
     try {
         
-        const { first_name, last_name, password, mobile_number, banch_time, exam_type } = req.body.formData;
-        if (!first_name || !last_name || !password || !mobile_number || !banch_time || !exam_type) {
+        const { first_name, last_name, password, mobile_number, banch_time, exam_type,middle_name } = req.body.formData;
+        if (!first_name || !last_name || !middle_name || !password || !mobile_number || !banch_time || !exam_type) {
             res.status(400)
                 .json({ error: "fields cannot be empty!" });
             return;
@@ -21,6 +21,7 @@ exports.register = async (req, res) => {
         const user = await User.create({
             first_name: req.body.formData.first_name,
             last_name: req.body.formData.last_name,
+            middle_name: req.body.formData.middle_name,
             mobile_number: req.body.formData.mobile_number,
             banch_time: req.body.formData.banch_time,
             exam_type: req.body.formData.exam_type,
@@ -48,10 +49,14 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({
             where: {
-                mobile_number: req.body.username
-            }
+                mobile_number: req.body.username,
+                
+            },
+            order: [
+                ['id', 'DESC']
+            ]
         });
-
+        
         if (!user) {
             return res.status(404).send({ 
                 status : 'Failed',
