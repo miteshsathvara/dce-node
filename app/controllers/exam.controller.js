@@ -9,47 +9,54 @@ function shuffleArray(array) {
 }
 
 exports.getQuestions = async (req, res) => {
-    
-    var option = {
+    const activityId = req.params.id;
+    const userId = req.userId;
+    const option = {
         limit: 50,
         offset: 0,
-        where: { activity_id: req.params.id }
+        where: { activity_id: activityId }
     };
-    ActivityPostTest.findAndCountAll(option).then(async function (results) {
-       
-        const q = [];
-        for (let i = 0; i < results.rows.length; i++) {
-            const obj = JSON.parse(results.rows[i].dataValues.answer);
-            results.rows[i].dataValues.answer = obj;
-            results.rows[i].dataValues.index = i;
-            q.push(results.rows[i].dataValues);
-            
-            
 
-            // get attempted answer
-            attemptedanswerExist = await ActivityPostTestResult.findOne({
-                where: {
-                    user_id: req.userId,
-                    activity_id: results.rows[i].dataValues.activity_id,
-                    question_id: results.rows[i].dataValues.id
-                }
-            });
+    try {
+        const results = await ActivityPostTest.findAndCountAll(option);
+        const questions = results.rows.map((row, index) => ({
+            ...row.dataValues,
+            answer: JSON.parse(row.dataValues.answer),
+            index: index,
+        }));
 
-            if (!attemptedanswerExist?.dataValues?.raw_data) {
-                results.rows[i].dataValues.attempted = false;
-                results.rows[i].dataValues.attempted_answer = "";
-            } else {
-                results.rows[i].dataValues.attempted = true;
-                results.rows[i].dataValues.attempted_answer = attemptedanswerExist?.dataValues?.raw_data;
-            }
-        }
-        const shuffledQuestions = shuffleArray(q);
+        // Fetch all attempted answers for the current user and activity
+        const attemptedAnswers = await ActivityPostTestResult.findAll({
+            where: {
+                user_id: userId,
+                activity_id: activityId,
+                question_id: questions.map(q => q.id), // Get an array of question IDs
+            },
+        });
+
+        const attemptedAnswersMap = new Map(
+            attemptedAnswers.map(attempt => [attempt.question_id, attempt.raw_data])
+        );
+
+        const enhancedQuestions = questions.map(question => {
+            const attemptedAnswer = attemptedAnswersMap.get(question.id);
+            return {
+                ...question,
+                attempted: !!attemptedAnswer,
+                attempted_answer: attemptedAnswer || "",
+            };
+        });
+
+        const shuffledQuestions = shuffleArray(enhancedQuestions);
         res.status(200).send({
             message: "Success",
             data: shuffledQuestions
         });
-    });
-}
+    } catch (error) {
+        console.error("Error fetching questions:", error);
+        res.status(500).send({ message: "Failed to fetch questions" });
+    }
+};
 exports.attemptquiz = async (req, res) => {
    
     const data = await Activity.findByPk(req.params.id);
