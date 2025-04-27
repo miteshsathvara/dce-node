@@ -58,83 +58,59 @@ exports.getQuestions = async (req, res) => {
     }
 };
 exports.attemptquiz = async (req, res) => {
-   
-    const data = await Activity.findByPk(req.params.id);
+    const activityId = req.params.id;
+    const userId = req.userId;
+    const questionId = req.body.question_id;
+    const attemptedAnswer = req.body.answer;
 
-    if (!data) {
-        return res.status(404).send({ msg: "'Activity not found' " });
-    }
+    try {
+        const activity = await Activity.findByPk(activityId);
+        if (!activity) {
+            return res.status(404).send({ msg: "Activity not found" });
+        }
 
-    let postTest = await ActivityPostTest.findAll({ where: { activity_id: req.params.id, id: req.body.question_id }, order: [['order_no', 'ASC']] });
-    const result_for_question = [];
-    postTest.forEach(function (question) {
+        const question = await ActivityPostTest.findOne({
+            where: { activity_id: activityId, id: questionId },
+            order: [['order_no', 'ASC']],
+        });
+
+        if (!question) {
+            return res.status(404).send({ msg: "Question not found for this activity" });
+        }
 
         const keysArray = JSON.parse(question.answer);
-        let attemptedanswer = req.body.answer;
+        const rightSide = keysArray
+            .filter(value => value.answer && value.answer[0] === '1')
+            .map(value => value.options);
+        const rightOption = rightSide.length > 0 ? rightSide[0] : '';
+        const isCorrect = attemptedAnswer === rightOption ? 1 : 0;
 
-        const right_side = keysArray.filter(value => value.answer && value.answer[0] === '1').map(value => value.options);
-        const right_option = right_side.length > 0 ? right_side[0] : '';
-        if (attemptedanswer !== right_option) {
-            result_for_question.push({
-                question_id: question.id,
-                activity_id: question.activity_id,
-                answer: attemptedanswer,
-                is_correct: 0,
-                correct_answers: 0
-            });
-        } else {
-            result_for_question.push({
-                question_id: question.id,
-                activity_id: question.activity_id,
-                answer: attemptedanswer,
-                is_correct: 1,
-                correct_answers: 1
-            });
-        }
-    });
+        const resultData = {
+            user_id: userId,
+            activity_id: activityId,
+            question_id: questionId,
+            score: isCorrect,
+            date_completed: new Date(),
+            is_active: true,
+            is_completed: true,
+            raw_data: attemptedAnswer,
+        };
 
-    for (let answer of result_for_question) {
-
-        attemptedanswerExist = await ActivityPostTestResult.findOne({
-            where: {
-                user_id: req.userId,
-                activity_id: answer.activity_id,
-                question_id: answer.question_id
+        const [attemptedAnswerExist, created] = await ActivityPostTestResult.upsert(
+            resultData,
+            {
+                where: {
+                    user_id: userId,
+                    activity_id: activityId,
+                    question_id: questionId,
+                },
             }
-        });
-        if (!attemptedanswerExist) {
-            await ActivityPostTestResult.create({
-                user_id: req.userId,
-                activity_id: answer.activity_id,
-                question_id: answer.question_id,
-                score: answer.correct_answers,
-                date_completed: new Date(),
-                is_active: true,
-                is_completed: true,
-                raw_data: answer.answer
-            });
-        } else {
-            // update record
-            await ActivityPostTestResult.update(
-                {
-                    user_id: req.userId,
-                    activity_id: answer.activity_id,
-                    question_id: answer.question_id,
-                    score: answer.correct_answers,
-                    date_completed: new Date(),
-                    is_active: true,
-                    is_completed: true,
-                    raw_data: answer.answer
-                },
-                {
-                    where: {
-                        user_id: req.userId,
-                        activity_id: answer.activity_id,
-                        question_id: answer.question_id,
-                    },
-                },
-            );
-        }
+        );
+
+        return res.status(200).send({ status: "Success", data: "Answer Saved Successfully." });
+
+    } catch (error) {
+        console.error("Error attempting quiz:", error);
+        return res.status(500).send({ msg: "Failed to save answer." });
     }
-    return res.status(200).send({ status: "Success", data: "Answer Save Successfully." });
-}
+};
